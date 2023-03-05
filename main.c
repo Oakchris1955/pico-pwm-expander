@@ -8,8 +8,8 @@
 static const uint I2C_SLAVE_ADDRESS = 0x17;
 static const uint I2C_BAUDRATE = 100000; // 100 kHz
 
-static const uint I2C_SLAVE_SDA_PIN = PICO_DEFAULT_I2C_SDA_PIN; // 4
-static const uint I2C_SLAVE_SCL_PIN = PICO_DEFAULT_I2C_SCL_PIN; // 5
+static const uint I2C_SLAVE_SDA_PIN = 2;
+static const uint I2C_SLAVE_SCL_PIN = 3;
 
 static struct {
 	uint8_t pwm_registers[16];
@@ -48,9 +48,9 @@ static void setup_slave() {
     gpio_set_function(I2C_SLAVE_SCL_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SLAVE_SCL_PIN);
 
-    i2c_init(i2c0, I2C_BAUDRATE);
-    
-    i2c_slave_init(i2c0, I2C_SLAVE_ADDRESS, &i2c_slave_handler);
+    i2c_init(i2c1, I2C_BAUDRATE);
+
+    i2c_slave_init(i2c1, I2C_SLAVE_ADDRESS, &i2c_slave_handler);
 }
 
 
