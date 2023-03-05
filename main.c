@@ -56,8 +56,8 @@ static void setup_slave() {
 
 int main() {
 	stdio_init_all();
-	puts("Initiated stdio_all");
+	printf("Initiated stdio_all");
 	setup_slave();
-	puts("Initiated slave");
+	printf("Initiated slave");
 	while (1) {};
 }
