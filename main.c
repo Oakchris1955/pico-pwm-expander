@@ -21,14 +21,14 @@ static void i2c_slave_handler(i2c_inst_t *i2c, i2c_slave_event_t event) {
 	switch (event) {
 		case I2C_SLAVE_RECEIVE:
 			if(!memory.pwm_reg_addr_written) {
-				memory.pwm_reg_addr = i2c_read_byte_raw(i2c);
+				memory.pwm_reg_addr = i2c_read_byte_raw(i2c) & 0b00001111;
 				memory.pwm_reg_addr_written = true;
 			} else {
-				memory.pwm_registers[memory.pwm_reg_addr >> 4] = i2c_read_byte_raw(i2c);
+				memory.pwm_registers[memory.pwm_reg_addr] = i2c_read_byte_raw(i2c);
 			}
 			break;
 		case I2C_SLAVE_REQUEST:
-			i2c_write_byte_raw(i2c, memory.pwm_registers[memory.pwm_reg_addr >> 4]);
+			i2c_write_byte_raw(i2c, memory.pwm_registers[memory.pwm_reg_addr]);
 			memory.pwm_reg_addr++;
 			break;
 		case I2C_SLAVE_FINISH:
