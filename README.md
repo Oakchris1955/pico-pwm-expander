@@ -27,7 +27,15 @@ Once you are done, you should see that the `build` directory contains some files
 
 ## Usage
 
-**TODO**
+Currently, the Raspberry Pi Pico utilises 18 out of the 26 available GPIOs (The datasheet says 30, however it also mentions that 4 are used for internal board functions). GPIOs 0 and 1 are part of the I2C interface used by the Raspbbery Pi Pico to interface with other devices. GPIOs 2 to 17 are put into PWM Mode and can be controlled using the I2C interface. 
+
+### The I2C interface
+
+You use I2C in order to communicate with the Raspberry Pi Pico. The pins utilised for this are GPIO 0 and 1; GPIO 0 is the Data line, while GPIO 1 is the Clock line.
+
+Internally, the Raspberry Pi Pico uses 16 "registers" that hold 8-bit values. Each register corresponds to a GPIO pin (GPIO 2 corresponds to register 0, GPIO 3 corresponds to register 1, etc.). The 8-bit value of each register controls the duty cycle of the corresponding GPIO/PWM pin (18 means a duty cycle of 18/255\*100 = 7%, 237 meands a duty cycle of 237/255\*100 = 93%, etc.). Note that since the register sare 8-bit, their values cap at 255.
+
+In order to change a corresponding register, you must send a whole byte, which represents the address. Out of the 8-bits, only the last 4 will be taken into account and will be considered the address to write at. If this byte is followed by another one, this byte will be written into the corresponding address, according to the first byte. If it is followed by another one, it will be written to the next address, and so on (this can prove particularly when having to change all the registers or moultiple registers in a row. If no byte is followed by the address byte, the Raspberry Pi Pico will return the value of that corresponding address.
 
 ## Contributing
 
