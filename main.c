@@ -4,10 +4,12 @@
 #include <pico/stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #define PWM_BASE_PIN 2
+#define I2C_ADDR_SELECT_BASE_PIN 18
 
-static const uint I2C_SLAVE_ADDRESS = 0x17;
+static const uint I2C_BASE_ADDRESS = 0x17;
 static const uint I2C_BAUDRATE = 100000; // 100 kHz
 
 static const uint I2C_SLAVE_SDA_PIN = 0;
@@ -50,7 +52,18 @@ static void i2c_slave_handler(i2c_inst_t *i2c, i2c_slave_event_t event) {
 	}
 }
 
-static void setup_slave() {
+static uint8_t get_i2c_addr_offset() {
+	// This function sets pin I2C_ADDR_SELECT_BASE_PIN and the following 3 pins into GPIO mode, read whether they are HIGH or LOW, determines the "offset" of the I2C address and then disables them
+	uint8_t i2c_addr_offset = 0;
+	for (int i = 0; i < 4; i++) {
+		gpio_init(I2C_ADDR_SELECT_BASE_PIN + i);
+		i2c_addr_offset += gpio_get(I2C_ADDR_SELECT_BASE_PIN + i) * pow(2, 4) / pow(2, i);
+		gpio_deinit(I2C_ADDR_SELECT_BASE_PIN + i);
+	}
+	return i2c_addr_offset;
+}
+
+static void setup_slave(uint8_t i2c_address_offset) {
     gpio_init(I2C_SLAVE_SDA_PIN);
     gpio_set_function(I2C_SLAVE_SDA_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SLAVE_SDA_PIN);
@@ -61,7 +74,7 @@ static void setup_slave() {
 
     i2c_init(i2c0, I2C_BAUDRATE);
 
-    i2c_slave_init(i2c0, I2C_SLAVE_ADDRESS, &i2c_slave_handler);
+    i2c_slave_init(i2c0, I2C_BASE_ADDRESS + i2c_address_offset, &i2c_slave_handler);
 }
 
 static void setup_pwm() {
@@ -81,7 +94,7 @@ int main() {
 	printf("Initiated stdio_all");
 	setup_pwm();
 	printf("Initiated PWM");
-	setup_slave();
+	setup_slave(get_i2c_addr_offset());
 	printf("Initiated slave");
 	while (1) {
 		for (int reg_address = 0; reg_address < 16; reg_address++) {
